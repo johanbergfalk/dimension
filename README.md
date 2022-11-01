@@ -1,2 +1,2 @@
 # Dimension
-📐 DAT067 Project at Chalmers
+📐 DAT067 Project
