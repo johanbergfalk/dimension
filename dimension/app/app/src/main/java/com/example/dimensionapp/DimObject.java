@@ -27,7 +27,7 @@ public class DimObject {
     }
 
     public String getString(DimObject o){
-        String text = o.height + ", " + o.weight + ", " + o.distance + ", " + o.type.toString();
+        String text = o.height + "cm, " + o.weight + "cm, " + o.distance + "m, " + "Objekt = " +o.type.toString();
         return text;
     }
 }
