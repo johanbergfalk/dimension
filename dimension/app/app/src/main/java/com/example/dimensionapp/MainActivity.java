@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 
 /**
  * Main class. This sets the first activity page in the app.
+ * In this phase the app only creates random ints to make it look like
+ * new inputs. These inputs are to be replaced with actuall input from raspberry pi.
  * @author Erik Gustavsson
  */
 public class MainActivity extends AppCompatActivity {
