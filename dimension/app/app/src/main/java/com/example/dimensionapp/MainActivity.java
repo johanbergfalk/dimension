@@ -5,8 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,17 +51,30 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void run() {
-                        Objectgenerator();
+                        try {
+                            Objectgenerator();
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 },1000, 2000);
             }
         });
     }
 
+
     /**
      * A test method to print out the "received" objects.
      */
-    private void Objectgenerator() {
+    private void Objectgenerator() throws Exception {
+
+        //---Test to see if data from pie is presented in app--
+        GetRequest test = new GetRequest("");
+        test.getObjects();
+        objectView.setText(test.parse());
+        //---End test---
         Random rand = new Random();
 
         int randx = rand.nextInt(100);
@@ -68,7 +83,9 @@ public class MainActivity extends AppCompatActivity {
 
         obj = new DimObject(randx, randy, randd, DimObject.Type.Car);
         text = text + "\n" + obj.getString(obj);
-        objectView.setText(text);
+        //objectView.setText(text); //TODO
+
+
     }
 
 
