@@ -21,12 +21,10 @@ import org.json.JSONObject;
 
 public class GetRequest {
 
-    private String piAddress = "http://192.168.68.109:5000/objects";
+    private String piAddress = "http://192.168.68.123:5000/objects";
     private static HttpURLConnection connection;
-    private DetectedObject[] allObjects;
+    private ObjectBuilder[] recievedOjbects;
     private URL url;
-    private JSONArray detectedObjects;
-    String response;
 
     /**
      * Constructor
@@ -38,7 +36,7 @@ public class GetRequest {
 
     }
 
-    public int getObjects() throws Exception { //TODO change return type to JSONArray
+    public int getObjects() throws Exception {
 
         int status = 0;
         BufferedReader reader;
@@ -76,34 +74,22 @@ public class GetRequest {
         } finally {
             connection.disconnect();
         }
-        detectedObjects = new JSONArray(responseContent.toString());
+
+        recievedOjbects = allObjects(responseContent.toString());
 
         return status;
     }
 
-    public String parse() throws JSONException {
-
-        String allJason = "";
-
-        for (int i = 0; i < 2; i++){
-            JSONObject detectedObject = detectedObjects.getJSONObject(i);
-
-            String objectType = detectedObject.getString("objectType");
-            int height = detectedObject.getInt("height");
-            int width = detectedObject.getInt("width");
-            int distance = detectedObject.getInt("distance");
-
-            allJason += "Object: " + objectType + " Height: " + height + " Width: " + width + " Distance: " + distance + "\n";
-
-        }
-        return allJason;
-    }
-
-    public DetectedObject[] getAllObjects() throws Exception{ //TODO - for later use
+    //Extract the stream and make new object with the data
+    public ObjectBuilder[] allObjects(String response){
         final GsonBuilder gsonBuilder = new GsonBuilder();
         final Gson gson = gsonBuilder.create();
-        allObjects = gson.fromJson(response, DetectedObject[].class);
-        return allObjects;
+        return gson.fromJson(response, ObjectBuilder[].class);
+
     }
 
+    public ObjectBuilder[] getAllObjects() throws Exception {
+        getObjects();
+        return this.recievedOjbects;
+    }
 }

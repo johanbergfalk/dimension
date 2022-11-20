@@ -1,17 +1,17 @@
 package com.example.dimensionapp;
 
 /**
- * Class that "store" JSON object
+ * Class used when to "store/create" JSON object
  * @author Robert Nilsson
  *
  */
 
-public class DetectedObject {
+public class ObjectBuilder {
 
     private String objectType;
-    private String height;
-    private String width;
-    private String distance;
+    private int height;
+    private int width;
+    private int distance;
 
 
     //---- Getters and Setters ------------------------------------
@@ -23,27 +23,27 @@ public class DetectedObject {
         this.objectType = objectType;
     }
 
-    public String getHeight(){
+    public int getHeight(){
         return height;
     }
 
-    public void setHeight(String height){
+    public void setHeight(int height){
         this.height = height;
     }
 
-    public String getWidth(){
+    public int getWidth(){
         return width;
     }
 
-    public void setWidth(String width){
+    public void setWidth(int width){
         this.width = width;
     }
 
-    public String getDistance(){
+    public int getDistance(){
         return this.distance;
     }
 
-    public void setDistance(String distance){
+    public void setDistance(int distance){
         this.distance = distance;
     }
 

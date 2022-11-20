@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         //This sets current view
         setContentView(R.layout.activity_main);
 
-        //Declaring activit view to corresponding view objects
+        //Declaring activity view to corresponding view objects
         objectView = findViewById(R.id.textViewObjects);
 
         //Creating a new branch to run a timer in the background, timer running objectgenerator
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            Objectgenerator();
+                            displayObject(); //TODO - Using this one to display actual objects from the server, move from this timed loop to "one-click" behavior
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
                         } catch (Exception e) {
@@ -68,13 +68,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A test method to print out the "received" objects.
      */
-    private void Objectgenerator() throws Exception {
+    private void ObjectGenerator(){
 
-        //---Test to see if data from pie is presented in app--
-        GetRequest test = new GetRequest("");
-        test.getObjects();
-        objectView.setText(test.parse());
-        //---End test---
         Random rand = new Random();
 
         int randx = rand.nextInt(100);
@@ -83,10 +78,42 @@ public class MainActivity extends AppCompatActivity {
 
         obj = new DimObject(randx, randy, randd, DimObject.Type.Car);
         text = text + "\n" + obj.getString(obj);
-        //objectView.setText(text); //TODO
+        objectView.setText(text);
 
 
     }
 
+    /**
+     * Get objects from server and display them
+     * @throws Exception
+     */
+    private void displayObject() throws Exception{
 
+
+        GetRequest test = new GetRequest("");
+        ObjectBuilder[] all = test.getAllObjects();
+        for (ObjectBuilder b : all){
+
+            if(b.getObjectType().equals("Car")){
+                obj = new DimObject(b.getHeight(), b.getWidth(), b.getDistance(), DimObject.Type.Car);
+                text = text + "\n" + obj.getString(obj) + "\n";
+                objectView.setText(text);
+            }
+            if(b.getObjectType().equals("Person")){
+                obj = new DimObject(b.getHeight(), b.getWidth(), b.getDistance(), DimObject.Type.Person);
+                text = text + "\n" + obj.getString(obj) + "\n";
+                objectView.setText(text);
+            }
+            if(b.getObjectType().equals("Bus")){
+                obj = new DimObject(b.getHeight(), b.getWidth(), b.getDistance(), DimObject.Type.Bus);
+                text = text + "\n" + obj.getString(obj) + "\n";
+                objectView.setText(text);
+            }
+            if(b.getObjectType().equals("Tree")){
+                obj = new DimObject(b.getHeight(), b.getWidth(), b.getDistance(), DimObject.Type.Tree);
+                text = text + "\n" + obj.getString(obj) + "\n";
+                objectView.setText(text);
+            }
+        }
+    }
 }

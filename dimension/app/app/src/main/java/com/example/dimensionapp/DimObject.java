@@ -1,6 +1,5 @@
 package com.example.dimensionapp;
 
-import java.util.Map;
 
 /**
  * Class to make objects for each identified object found by camera
@@ -15,19 +14,19 @@ public class DimObject {
         Tree,
         Bus;
     }
-    private int height, weight, distance;
+    private int height, width, distance;
     private Type type;
 
     //Constructor
     public DimObject(int x, int y, int d,Type t){
             height = x;
-            weight = y;
+            width = y;
             distance = d;
             type = t;
     }
 
     public String getString(DimObject o){
-        String text = o.height + "cm, " + o.weight + "cm, " + o.distance + "m, " + "Objekt = " +o.type.toString();
+        String text = o.height + "cm, " + o.width + "cm, " + o.distance + "cm, " + "Object = " +o.type.toString();
         return text;
     }
 }
