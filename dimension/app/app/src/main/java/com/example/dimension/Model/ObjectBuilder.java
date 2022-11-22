@@ -13,6 +13,13 @@ public class ObjectBuilder {
     private int width;
     private int distance;
 
+    public ObjectBuilder() {
+        this.objectType = "Car";
+        this.height = 150;
+        this.width = 130;
+        this.distance = 1000;
+    }
+
 
     //---- Getters and Setters ------------------------------------
     public String getObjectType(){

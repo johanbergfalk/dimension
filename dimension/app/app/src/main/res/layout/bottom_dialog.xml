@@ -8,7 +8,7 @@
     android:background="@drawable/bottom_dialog_bg">
     
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/objectTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 
@@ -16,7 +16,7 @@
         android:fontFamily="@font/poppins_bold"
         android:textStyle="bold"
         android:textColor="@color/black"
-        android:text="Car"/>
+        android:text=""/>
 
     <View
         android:id="@+id/divider"
@@ -50,7 +50,7 @@
                 android:layout_marginStart="12dp"
                 android:layout_weight="1"
                 android:fontFamily="@font/poppins_regular"
-                android:text="150 x 165 x 430 cm"
+                android:text=""
                 android:textSize="24dp"/>
 
         </LinearLayout>
@@ -74,7 +74,7 @@
                 android:layout_marginStart="12dp"
                 android:layout_weight="1"
                 android:fontFamily="@font/poppins_regular"
-                android:text="1200 cm"
+                android:text=""
                 android:textSize="24dp"/>
 
         </LinearLayout>

@@ -1,6 +1,7 @@
 package com.example.dimension;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.app.Dialog;
 import android.graphics.Color;
@@ -19,18 +20,25 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.dimension.ViewModel.ObjectViewModel;
+
 public class MainActivity extends AppCompatActivity {
 
     Button show;
-    ImageView image;
+    ImageView objectImage;
+    TextView objectTitle;
+    TextView dimensionText;
+    TextView distanceText;
     TextView detailsText;
+
+    ObjectViewModel objectViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        objectViewModel = new ViewModelProvider(this).get(ObjectViewModel.class);
 
-        image = findViewById(R.id.objectImage);
         detailsText = findViewById(R.id.objectDetailsText);
         show = findViewById(R.id.show);
 
@@ -38,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 showDialog();
-                fadeInAndShowImage(image);
             }
         });
 
@@ -50,9 +57,26 @@ public class MainActivity extends AppCompatActivity {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.bottom_dialog);
         dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        dialog.setCancelable(false);
+
+        try {
+            objectViewModel.displayObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        objectImage = findViewById(R.id.objectImage);
+        objectTitle = dialog.findViewById(R.id.objectTitle);
+        dimensionText = dialog.findViewById(R.id.dimensionText);
+        distanceText = dialog.findViewById(R.id.distanceText);
+
+        objectImage.setBackgroundResource(objectViewModel.getObjectImage());
+        objectTitle.setText(objectViewModel.getObjectTitle());
+        dimensionText.setText(objectViewModel.getDimensionText());
+        distanceText.setText(objectViewModel.getDistanceText());
 
         show.setVisibility(View.GONE);
-        detailsText.setText("Object details");
+        detailsText.setText(R.string.object_details);
 
         dialog.show();
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -60,14 +84,16 @@ public class MainActivity extends AppCompatActivity {
         dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
         dialog.getWindow().setGravity(Gravity.BOTTOM);
 
+        fadeInAndShowImage(objectImage);
+
         Button buttonClose = dialog.findViewById(R.id.buttonClose);
         buttonClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dialog.dismiss();
-                fadeOutAndHideImage(image);
+                fadeOutAndHideImage(objectImage);
                 show.setVisibility(View.VISIBLE);
-                detailsText.setText("Looking for object");
+                detailsText.setText(R.string.looking_for_object);
             }
         });
     }
