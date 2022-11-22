@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void fadeInAndShowImage(final ImageView img)
-    {
+    private void fadeInAndShowImage(final ImageView img) {
+
         Animation fadeIn = new AlphaAnimation(0, 1);
         fadeIn.setInterpolator(new AccelerateInterpolator());
         fadeIn.setDuration(500);
@@ -91,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
         img.startAnimation(fadeIn);
     }
 
-    private void fadeOutAndHideImage(final ImageView img)
-    {
+    private void fadeOutAndHideImage(final ImageView img) {
+
         Animation fadeOut = new AlphaAnimation(1, 0);
         fadeOut.setInterpolator(new AccelerateInterpolator());
         fadeOut.setDuration(500);
