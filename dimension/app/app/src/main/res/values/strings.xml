@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Dimension</string>
+    <string name="object_details">Object details</string>
+    <string name="looking_for_object">Looking for object</string>
 </resources>
