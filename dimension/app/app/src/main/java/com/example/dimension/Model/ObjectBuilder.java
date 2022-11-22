@@ -13,12 +13,12 @@ public class ObjectBuilder {
     private int width;
     private int distance;
 
-    public ObjectBuilder() {
+    /*public ObjectBuilder() {
         this.objectType = "Person";
         this.height = 150;
         this.width = 130;
         this.distance = 1000;
-    }
+    }*/
 
 
     //---- Getters and Setters ------------------------------------

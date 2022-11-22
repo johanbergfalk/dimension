@@ -7,6 +7,7 @@ import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,9 @@ import android.widget.TextView;
 
 import com.example.dimension.ViewModel.ObjectViewModel;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class MainActivity extends AppCompatActivity {
 
     Button show;
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         objectViewModel = new ViewModelProvider(this).get(ObjectViewModel.class);
 
@@ -43,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         show = findViewById(R.id.show);
 
         show.setOnClickListener(new View.OnClickListener() {
+
+
             @Override
             public void onClick(View view) {
                 showDialog();

@@ -6,13 +6,9 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 /**
@@ -37,7 +33,7 @@ public class GetRequest {
 
     }
 
-    public int getObjects() throws Exception {
+    public void getObjects() throws Exception {
 
         int status = 0;
         BufferedReader reader;
@@ -49,8 +45,8 @@ public class GetRequest {
             connection = (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000); //TODO - Find "good" values here
-            connection.setReadTimeout(5000); //TODO - Find "good" values here
+            connection.setConnectTimeout(2000); //TODO - Find "good" values here
+            connection.setReadTimeout(2000); //TODO - Find "good" values here
 
             status = connection.getResponseCode(); //We want the code 200 for successful connection
 
@@ -77,8 +73,6 @@ public class GetRequest {
         }
 
         recievedOjbects = allObjects(responseContent.toString());
-
-        return status;
     }
 
     //Extract the stream and make new object with the data

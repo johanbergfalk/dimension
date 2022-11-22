@@ -2,26 +2,37 @@ package com.example.dimension.ViewModel;
 
 import androidx.lifecycle.ViewModel;
 
-import com.example.dimension.Model.ObjectBuilder;
-import com.example.dimension.R;
+import com.example.dimension.Model.*;
 
-import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-public class ObjectViewModel extends ViewModel {
+public class ObjectViewModel extends ViewModel{
 
     String objectTitle;
     String dimensionText;
     String distanceText;
+    GetRequest request;
+    ObjectBuilder[] builder;
 
     public void displayObject() throws Exception {
 
-        //GetRequest request = new GetRequest("");
-        //ObjectBuilder[] builder = request.getAllObjects();
+        request = new GetRequest("");
 
-        //for testing purposes only
-        ObjectBuilder object = new ObjectBuilder();
-        ArrayList<ObjectBuilder> builder = new ArrayList<>();
-        builder.add(object);
+        //Run the networkservice in separate thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<?> future = executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    builder = request.getAllObjects();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        future.get();
 
         for(ObjectBuilder b : builder) {
             objectTitle = b.getObjectType();
