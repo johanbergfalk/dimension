@@ -65,12 +65,19 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        objectImage = findViewById(R.id.objectImage);
+        switch(objectViewModel.getObjectTitle()) {
+            case "Car":
+                objectImage = findViewById(R.id.carImage);
+                break;
+            case "Person":
+                objectImage = findViewById(R.id.humanImage);
+                break;
+        }
+
         objectTitle = dialog.findViewById(R.id.objectTitle);
         dimensionText = dialog.findViewById(R.id.dimensionText);
         distanceText = dialog.findViewById(R.id.distanceText);
 
-        objectImage.setBackgroundResource(objectViewModel.getObjectImage());
         objectTitle.setText(objectViewModel.getObjectTitle());
         dimensionText.setText(objectViewModel.getDimensionText());
         distanceText.setText(objectViewModel.getDistanceText());

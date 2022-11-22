@@ -14,7 +14,7 @@ public class ObjectBuilder {
     private int distance;
 
     public ObjectBuilder() {
-        this.objectType = "Car";
+        this.objectType = "Person";
         this.height = 150;
         this.width = 130;
         this.distance = 1000;

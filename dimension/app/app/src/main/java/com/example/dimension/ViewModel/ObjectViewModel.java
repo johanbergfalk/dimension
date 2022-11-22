@@ -1,13 +1,7 @@
 package com.example.dimension.ViewModel;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.widget.ImageView;
-import android.widget.TextView;
-
 import androidx.lifecycle.ViewModel;
 
-import com.example.dimension.Model.GetRequest;
 import com.example.dimension.Model.ObjectBuilder;
 import com.example.dimension.R;
 
@@ -15,7 +9,6 @@ import java.util.ArrayList;
 
 public class ObjectViewModel extends ViewModel {
 
-    int objectImage;
     String objectTitle;
     String dimensionText;
     String distanceText;
@@ -31,30 +24,11 @@ public class ObjectViewModel extends ViewModel {
         builder.add(object);
 
         for(ObjectBuilder b : builder) {
-            switch(b.getObjectType()) {
-                case "Car":
-                    objectImage = R.drawable.porsche;
-                    objectTitle = b.getObjectType();
-                    dimensionText = b.getHeight() + " X " + b.getWidth() + " cm";
-                    distanceText = b.getDistance() + " cm";
-                    break;
+            objectTitle = b.getObjectType();
+            dimensionText = b.getHeight() + " X " + b.getWidth() + " cm";
+            distanceText = b.getDistance() + " cm";
 
-                case "Person":
-                    objectImage = R.drawable.ic_distance;
-                    objectTitle = b.getObjectType();
-                    dimensionText = b.getHeight() + " X " + b.getWidth() + " cm";
-                    distanceText = b.getDistance() + " cm";
-                    break;
-            }
         }
-    }
-
-    public int getObjectImage() {
-        return objectImage;
-    }
-
-    public void setObjectImage(int objectImage) {
-        this.objectImage = objectImage;
     }
 
     public String getObjectTitle() {
