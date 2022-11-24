@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     Button show;
+    Button settings;
     ImageView objectImage;
     TextView objectTitle;
     TextView dimensionText;
@@ -79,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
             case "Person":
                 objectImage = findViewById(R.id.humanImage);
                 break;
+            case "No object found":
+                objectImage = findViewById(R.id.nothingImage);
         }
 
         objectTitle = dialog.findViewById(R.id.objectTitle);

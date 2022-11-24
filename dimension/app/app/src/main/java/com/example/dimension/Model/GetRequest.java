@@ -3,6 +3,7 @@ package com.example.dimension.Model;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -20,8 +21,9 @@ public class GetRequest {
 
     private String piAddress = "http://192.168.68.123:5000/objects";
     private static HttpURLConnection connection;
-    private ObjectBuilder[] recievedOjbects;
+    private ObjectBuilder[] receivedObjects;
     private URL url;
+    private boolean connected = true;
 
     /**
      * Constructor
@@ -37,7 +39,7 @@ public class GetRequest {
 
         int status = 0;
         BufferedReader reader;
-        String line;
+        String line = "";
         StringBuilder responseContent = new StringBuilder();
 
         try {
@@ -47,6 +49,8 @@ public class GetRequest {
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(2000); //TODO - Find "good" values here
             connection.setReadTimeout(2000); //TODO - Find "good" values here
+
+
 
             status = connection.getResponseCode(); //We want the code 200 for successful connection
 
@@ -66,17 +70,25 @@ public class GetRequest {
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        } catch (IOException e){
-            e.printStackTrace();
+        } catch (ConnectException e){
+            connected = false;
+            receivedObjects = allObjects("[]");
         } finally {
             connection.disconnect();
         }
 
-        recievedOjbects = allObjects(responseContent.toString());
+        if(connected){
+            receivedObjects = allObjects(responseContent.toString());
+        }
+
     }
 
     //Extract the stream and make new object with the data
     public ObjectBuilder[] allObjects(String response){
+        //If no objects are found, create an No object found "object
+        if(response.equals("[]")){
+            response = "[{'objectType': 'No object found', 'height': 0, 'width': 0, 'distance': 0}]";
+        }
         final GsonBuilder gsonBuilder = new GsonBuilder();
         final Gson gson = gsonBuilder.create();
         return gson.fromJson(response, ObjectBuilder[].class);
@@ -85,6 +97,6 @@ public class GetRequest {
 
     public ObjectBuilder[] getAllObjects() throws Exception {
         getObjects();
-        return this.recievedOjbects;
+        return this.receivedObjects;
     }
 }

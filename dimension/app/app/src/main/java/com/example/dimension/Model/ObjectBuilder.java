@@ -13,7 +13,8 @@ public class ObjectBuilder {
     private int width;
     private int distance;
 
-    /*public ObjectBuilder() {
+    //TODO - remove
+    /*public ObjectBuilder() { //Used when testing when no server available
         this.objectType = "Person";
         this.height = 150;
         this.width = 130;
