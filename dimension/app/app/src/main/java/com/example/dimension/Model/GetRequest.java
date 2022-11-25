@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,7 +20,7 @@ import com.google.gson.GsonBuilder;
 
 public class GetRequest {
 
-    private String piAddress = "http://192.168.68.123:5000/objects";
+    private String piAddress = "";
     private static HttpURLConnection connection;
     private ObjectBuilder[] receivedObjects;
     private URL url;
@@ -31,7 +32,7 @@ public class GetRequest {
      */
     public GetRequest(String piAddress) throws MalformedURLException {
         //TODO IP should be provided
-        //this.piAddress = piAddress;
+        this.piAddress = "http://" + piAddress + ":5000/objects";
 
     }
 
@@ -73,8 +74,11 @@ public class GetRequest {
         } catch (ConnectException e){
             connected = false;
             receivedObjects = allObjects("[]");
-        } finally {
-            connection.disconnect();
+        } catch (SocketTimeoutException e){
+            connected = false;
+            receivedObjects = allObjects("IP");
+        }finally {
+        connection.disconnect();
         }
 
         if(connected){
@@ -88,6 +92,9 @@ public class GetRequest {
         //If no objects are found, create an No object found "object
         if(response.equals("[]")){
             response = "[{'objectType': 'No object found', 'height': 0, 'width': 0, 'distance': 0}]";
+        }
+        if(response.equals("IP")){
+            response = "[{'objectType': 'Server not found', 'height': 0, 'width': 0, 'distance': 0}]";
         }
         final GsonBuilder gsonBuilder = new GsonBuilder();
         final Gson gson = gsonBuilder.create();

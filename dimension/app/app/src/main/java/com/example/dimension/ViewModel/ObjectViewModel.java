@@ -15,10 +15,11 @@ public class ObjectViewModel extends ViewModel{
     String distanceText;
     GetRequest request;
     ObjectBuilder[] builder;
+    String ipAddress = "";
 
     public void displayObject() throws Exception {
 
-        request = new GetRequest("");
+        request = new GetRequest(ipAddress);
 
         //Run the networkservice in separate thread
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -64,6 +65,12 @@ public class ObjectViewModel extends ViewModel{
 
     public void setDistanceText(String distanceText) {
         this.distanceText = distanceText;
+    }
+
+    public String getIpAddress(){return ipAddress;}
+
+    public void setIpAddress(String ipAddress){
+        this.ipAddress = ipAddress;
     }
 
 }
