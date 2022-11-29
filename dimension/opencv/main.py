@@ -45,15 +45,16 @@ import RPi.GPIO as GPIO
 from threading import Thread, Timer
 import math
 import calculatemetrics
-
+from datetime import datetime
 import importlib.util
+from detected_object import DetectedObject
 
 
 # Use pin numbering and not BCM
 GPIO.setmode(GPIO.BOARD)
 
 # Create and initialize state-variables used to handle activation by single button press
-searchActivated = False;
+searchActivated = False
 timeoutDelay = 5 # In seconds. After button is pressed, the searchActivated will be set to false after timeoutDelay
 ledRED = 40
 ledYELLOW = 38
@@ -74,7 +75,7 @@ GPIO.output(ledYELLOW, GPIO.HIGH)
 # Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
 class VideoStream:
     """Camera object that controls video streaming from the Picamera"""
-    def __init__(self,resolution=(2592,120),framerate=30):
+    def __init__(self,resolution=(1280,720),framerate=30):
         # Initialize the PiCamera and the camera image stream
         self.stream = cv2.VideoCapture(0)
         ret = self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
@@ -163,6 +164,7 @@ if use_TPU:
 # Get path to current working directory
 CWD_PATH = os.getcwd()
 
+
 # Path to .tflite file, which contains the model that is used for object detection
 PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
 
@@ -191,6 +193,16 @@ else:
 interpreter.allocate_tensors()
 
 
+
+
+
+# Save the object of interest to draw box around
+bestObjectPosition = [0, 0, 0, 0] #(xmin, ymin, xmax, ymax)
+bestObjectImg = None
+bestObjectDistance = None
+bestObjectClass = None
+frameCount = 0
+
 #Is the detected object the one pointed at by the LiDAR?
 # min = top-left corner, max = bottom-right corner
 def objectIsCenter(xmin, ymin, xmax, ymax):
@@ -202,25 +214,19 @@ def objectIsCenter(xmin, ymin, xmax, ymax):
 #TODO: Comment
 def buttonPressed(pin):
     global searchActivated
+    global frameCount
+    print("Button pressed")
     if searchActivated:
         return
     else:
         searchActivated = True
-        GPIO.output(ledYELLOW, GPIO.LOW)
-        #timeoutInterrupt = Timer(timeoutDelay, timeoutReached)
-        #timeoutInterrupt.start()
+        bestObjectPosition = None
+        bestObjectDistance = None
+        frameCount = 3 #How many frames to sample
+        print("Button pin reading: " + str(GPIO.input(buttonPin)))
         
-#TODO: Comment
-def timeoutReached():
-    print("No object found")
-    global searchActivated
-    if searchActivated:
-        searchActivated = False
-        GPIO.output(ledRED, GPIO.HIGH)
-        time.sleep(2)
-        GPIO.output(ledRED, GPIO.LOW)
-    GPIO.output(ledYELLOW, GPIO.HIGH)
-    
+
+
 def distanceFromCenter(xmin, ymin, xmax, ymax):
     xObjCenter = xmin + (int(round((xmax - xmin) / 2)))
     yObjCenter = ymin + (int(round((ymax - ymin) / 2)))
@@ -238,8 +244,6 @@ input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 height = input_details[0]['shape'][1]
 width = input_details[0]['shape'][2]
-print(height, width)
-
 
 floating_model = (input_details[0]['dtype'] == np.float32)
 
@@ -251,9 +255,11 @@ frame_rate_calc = 1
 freq = cv2.getTickFrequency()
 
 
-# Save the object of interest to draw box around
-bestObjectIndex = None
-bestObjectDistance = None
+#sender = DetectedObject('Car', 180, 160, 5000)
+#sender.object_list()
+
+
+
 
 
 # Initialize video stream
@@ -263,11 +269,10 @@ time.sleep(1)
 # Create window
 cv2.namedWindow('Object detector', cv2.WINDOW_NORMAL)
 
+
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 while True:
-    bestObjectIndex = None
-    bestObjectDistance = None
-    objectIndex = -1
+    
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     
@@ -284,8 +289,9 @@ while True:
     if floating_model:
         input_data = (np.float32(input_data) - input_mean) / input_std
 
-    if searchActivated:
-        searchActivated = False
+    if searchActivated and frameCount > 0:
+        frameCount = frameCount - 1
+        print("Frame count: " + str(frameCount))
         # Perform the actual detection by running the model with the image as input
         interpreter.set_tensor(input_details[0]['index'],input_data)
         interpreter.invoke()
@@ -298,7 +304,7 @@ while True:
         
             
         # Loop over all detections and draw detection box if confidence is above minimum threshold
-    
+
         for i in range(len(scores)):
             if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)):
                 print("Objects detected")
@@ -313,30 +319,38 @@ while True:
                 if objectIsCenter(xmin, ymin, xmax, ymax):
                     if bestObjectDistance == None:
                         bestObjectDistance = distanceFromCenter(xmin, ymin, xmax, ymax)
-                    if bestObjectIndex == None:
-                        bestObjectIndex = i
+                        bestObjectPosition = [xmin, ymin, xmax, ymax]
+                        bestObjectImg = frame.copy()
+                        bestObjectClass = labels[int(classes[i])]
+                        
                     if distanceFromCenter(xmin, ymin, xmax, ymax) < bestObjectDistance:
-                        bestObjectIndex = i
-                    
-                    
-                    
-                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
-                object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-                label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
-                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-                label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-                cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-        
+                        bestObjectDistance = distanceFromCenter(xmin, ymin, xmax, ymax)
+                        bestObjectPosition = [xmin, ymin, xmax, ymax]
+                        bestObjectImg = frame.copy()
+                        bestObjectClass = labels[int(classes[i])]
+                        
             
-        if bestObjectIndex != None:
-            
-            ymin = int(max(1,(boxes[bestObjectIndex][0] * imH)))
-            xmin = int(max(1,(boxes[bestObjectIndex][1] * imW)))
-            ymax = int(min(imH,(boxes[bestObjectIndex][2] * imH)))
-            xmax = int(min(imW,(boxes[bestObjectIndex][3] * imW)))
-            
-            print("Best match: " + labels[int(classes[bestObjectIndex])] + " " + "Width: " + str(calculatemetrics.px_to_metric(imW, 160, xmax - xmin, 360)) + " Height: " + str(calculatemetrics.px_to_metric(imH, 120, ymax-ymin, 360)))
+                
+        if frameCount == 0:
+            searchActivated = False
+            if bestObjectDistance != None:
+                #bestObjectImg = bestObjectImg[bestObjectPosition[1]:bestObjectPosition[3], bestObjectPosition[0]:bestObjectPosition[2]]
+                print("Best match: " + bestObjectClass)
+                cv2.putText(bestObjectImg, bestObjectClass, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2) # Draw label text
+                filenameSave = bestObjectClass + "_"
+                filenameSave = filenameSave + str(datetime.now())
+                filenameSave = filenameSave + '.jpg'
+                matchwidth = calculatemetrics.px_to_metric(1280, 160, bestObjectPosition[2] - bestObjectPosition[0], 100)
+                matchheight = calculatemetrics.px_to_metric(720, 90, bestObjectPosition[3] - bestObjectPosition[1], 100)
+                #cv2.imwrite(filenameSave, bestObjectImg)
+                match = DetectedObject(bestObjectClass, int(matchheight), int(matchwidth), 100)
+                match.object_list()
+                #print("Output saved as: " + filenameSave)
+                
+      
+
+    
+
             
     # Draw framerate in corner of frame
     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
@@ -353,6 +367,8 @@ while True:
     time1 = (t2-t1)/freq
     frame_rate_calc= 1/time1
 
+    
+    
     # Press 'q' to quit
     if cv2.waitKey(1) == ord('q'):
         break
