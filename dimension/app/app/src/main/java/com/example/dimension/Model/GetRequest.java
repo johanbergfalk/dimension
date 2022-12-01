@@ -31,11 +31,15 @@ public class GetRequest {
      * @param piAddress the address to the server
      */
     public GetRequest(String piAddress) throws MalformedURLException {
-        //TODO IP should be provided
+
         this.piAddress = "http://" + piAddress + ":5000/objects";
 
     }
 
+    /**
+     * Establish connection to raspberry server and get REST stream
+     * @throws Exception
+     */
     public void getObjects() throws Exception {
 
         int status = 0;

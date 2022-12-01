@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.text.InputType;
 import android.view.Gravity;
@@ -26,8 +27,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.dimension.Model.ConnectionState;
 import com.example.dimension.ViewModel.ObjectViewModel;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,8 +44,9 @@ public class MainActivity extends AppCompatActivity {
     TextView dimensionText;
     TextView distanceText;
     TextView detailsText;
-    String ipAddress = "192.168.68.123"; //TODO - remove after testing and set to ""
-
+    Timer timer1;
+    boolean connected = false;
+    String ipAddress = "192.168.68.122"; //TODO - remove or set to the static IP of our raspberryPi
     ObjectViewModel objectViewModel;
 
     @Override
@@ -50,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         objectViewModel = new ViewModelProvider(this).get(ObjectViewModel.class);
+
 
         detailsText = findViewById(R.id.objectDetailsText);
         show = findViewById(R.id.show);
@@ -73,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        checkConnectedState();
+        setConnectedState();
+
     }
 
     private void showDialog() {
@@ -91,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        switch(objectViewModel.getObjectTitle()) {
+        switch (objectViewModel.getObjectTitle()) {
             case "Car":
                 objectImage = findViewById(R.id.carImage);
                 break;
@@ -102,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 objectImage = findViewById(R.id.nothingImage);
             case "Server not found":
                 objectImage = findViewById(R.id.serverNotFound);
+            default:
 
         }
 
@@ -142,14 +152,16 @@ public class MainActivity extends AppCompatActivity {
         fadeIn.setInterpolator(new AccelerateInterpolator());
         fadeIn.setDuration(500);
 
-        fadeIn.setAnimationListener(new Animation.AnimationListener()
-        {
-            public void onAnimationEnd(Animation animation)
-            {
+        fadeIn.setAnimationListener(new Animation.AnimationListener() {
+            public void onAnimationEnd(Animation animation) {
                 img.setVisibility(View.VISIBLE);
             }
-            public void onAnimationRepeat(Animation animation) {}
-            public void onAnimationStart(Animation animation) {}
+
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            public void onAnimationStart(Animation animation) {
+            }
         });
 
         img.startAnimation(fadeIn);
@@ -161,20 +173,22 @@ public class MainActivity extends AppCompatActivity {
         fadeOut.setInterpolator(new AccelerateInterpolator());
         fadeOut.setDuration(500);
 
-        fadeOut.setAnimationListener(new Animation.AnimationListener()
-        {
-            public void onAnimationEnd(Animation animation)
-            {
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            public void onAnimationEnd(Animation animation) {
                 img.setVisibility(View.GONE);
             }
-            public void onAnimationRepeat(Animation animation) {}
-            public void onAnimationStart(Animation animation) {}
+
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            public void onAnimationStart(Animation animation) {
+            }
         });
 
         img.startAnimation(fadeOut);
     }
 
-    private void setIp(){
+    private void setIp() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Enter server IP address");
@@ -200,5 +214,48 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+    //"ping" raspberryPi to check if it is reachable and can respond to REST connection
+    private void checkConnectedState() {
+
+        //Running in loop to continuously test connection state with server
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
+            ConnectionState serverConnection;
+
+            @Override
+            public void run() {
+                timer1 = new Timer();
+                timer1.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        serverConnection = new ConnectionState(ipAddress);
+                        try {
+                            connected = serverConnection.checkState();
+                        } catch (Exception e) {
+                            connected = false;
+                        }
+                    }
+                }, 1000, 2000);
+            }
+        });
+    }
+
+    //Shows the state as a red(connected) or green(not connected) led at the home screen depending on connected state to raspberryPi
+    private void setConnectedState(){
+        //Create the 2 views for red and green led
+        ImageView connectedToServer = findViewById(R.id.connectedView);;
+        ImageView notConnectedToSer = findViewById(R.id.notConnectedView);
+
+        Handler h = new Handler();
+        int delay = 1000; //milliseconds
+
+        h.postDelayed(new Runnable(){
+            public void run(){
+                connectedToServer.setVisibility(connected ? View.VISIBLE : View.GONE);
+                notConnectedToSer.setVisibility(connected ? View.GONE : View.VISIBLE);
+                h.postDelayed(this, delay);
+            }
+        }, delay);
     }
 }
