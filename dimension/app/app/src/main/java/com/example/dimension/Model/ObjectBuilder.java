@@ -13,14 +13,6 @@ public class ObjectBuilder {
     private int width;
     private int distance;
 
-    //TODO - remove
-    /*public ObjectBuilder() { //Used when testing when no server available
-        this.objectType = "Person";
-        this.height = 150;
-        this.width = 130;
-        this.distance = 1000;
-    }*/
-
 
     //---- Getters and Setters ------------------------------------
     public String getObjectType(){

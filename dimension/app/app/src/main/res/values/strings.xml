@@ -2,7 +2,7 @@
     <string name="app_name">Dimension</string>
     <string name="object_details">Object details</string>
     <string name="looking_for_object">Looking for object</string>
-    <string name="button">Button</string>
-    <string name="save_object">Save object</string>
-    <string name="x">X</string>
+    <string name="button">Show objects</string>
+    <string name="next_object">Next</string>
+    <string name="close">Close</string>
 </resources>

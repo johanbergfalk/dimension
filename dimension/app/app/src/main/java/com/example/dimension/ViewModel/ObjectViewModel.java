@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.dimension.Model.*;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -14,8 +15,9 @@ public class ObjectViewModel extends ViewModel{
     String dimensionText;
     String distanceText;
     GetRequest request;
-    ObjectBuilder[] builder;
+    ObjectBuilder[] builder; //All received detected objects
     String ipAddress = "";
+    ArrayList<OneObject> objects = new ArrayList<>();
 
     public void displayObject() throws Exception {
 
@@ -39,7 +41,7 @@ public class ObjectViewModel extends ViewModel{
             objectTitle = b.getObjectType();
             dimensionText = b.getHeight() + " X " + b.getWidth() + " cm";
             distanceText = b.getDistance() + " cm";
-
+            objects.add(new OneObject(objectTitle, dimensionText, distanceText));
         }
     }
 
@@ -71,6 +73,10 @@ public class ObjectViewModel extends ViewModel{
 
     public void setIpAddress(String ipAddress){
         this.ipAddress = ipAddress;
+    }
+
+    public ArrayList<OneObject> getObjects(){
+        return this.objects;
     }
 
 }

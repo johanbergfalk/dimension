@@ -88,7 +88,6 @@ public class GetRequest {
         if(connected){
             receivedObjects = allObjects(responseContent.toString());
         }
-
     }
 
     //Extract the stream and make new object with the data

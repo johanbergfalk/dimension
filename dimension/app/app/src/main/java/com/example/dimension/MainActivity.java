@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -28,12 +29,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.dimension.Model.ConnectionState;
+import com.example.dimension.Model.OneObject;
 import com.example.dimension.ViewModel.ObjectViewModel;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.xml.datatype.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,8 +50,9 @@ public class MainActivity extends AppCompatActivity {
     TextView detailsText;
     Timer timer1;
     boolean connected = false;
-    String ipAddress = "192.168.68.122"; //TODO - remove or set to the static IP of our raspberryPi
+    String ipAddress = "192.168.68.123"; //TODO - remove or set to the static IP of our raspberryPi
     ObjectViewModel objectViewModel;
+    ArrayList<OneObject> allObjects = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Displays the detected object with measurements
     private void showDialog() {
 
         final Dialog dialog = new Dialog(this);
@@ -96,11 +102,15 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             objectViewModel.displayObject();
+            allObjects = objectViewModel.getObjects();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        switch (objectViewModel.getObjectTitle()) {
+        OneObject obj = allObjects.get(0);
+        allObjects.remove(0);
+
+        switch (obj.getTitle()) {
             case "Car":
                 objectImage = findViewById(R.id.carImage);
                 break;
@@ -112,16 +122,16 @@ public class MainActivity extends AppCompatActivity {
             case "Server not found":
                 objectImage = findViewById(R.id.serverNotFound);
             default:
-
+                objectImage = findViewById(R.id.imageOfDetectedObject); //TODO - This will display image sent from raspberryPi
         }
-
+        
         objectTitle = dialog.findViewById(R.id.objectTitle);
         dimensionText = dialog.findViewById(R.id.dimensionText);
         distanceText = dialog.findViewById(R.id.distanceText);
 
-        objectTitle.setText(objectViewModel.getObjectTitle());
-        dimensionText.setText(objectViewModel.getDimensionText());
-        distanceText.setText(objectViewModel.getDistanceText());
+        objectTitle.setText(obj.getTitle());
+        dimensionText.setText(obj.getDimensions());
+        distanceText.setText(obj.getDistance());
 
         show.setVisibility(View.GONE);
         detailsText.setText(R.string.object_details);
@@ -144,6 +154,54 @@ public class MainActivity extends AppCompatActivity {
                 detailsText.setText(R.string.looking_for_object);
             }
         });
+
+        //If only one object is detected, the "Next" button is not shown
+        Button buttonNext = dialog.findViewById(R.id.buttonNext);
+        if(allObjects.size() < 1){
+            buttonNext.setVisibility(View.INVISIBLE);
+            buttonNext.setClickable(false);
+        }
+
+        buttonNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fadeOutAndHideImage(objectImage);
+                showNextObject(dialog, buttonNext);
+                }
+
+        });
+    }
+
+    //Displays the next detected object in the list received from raspberry pie
+    private void showNextObject(Dialog dialog, Button next){
+        OneObject obj = allObjects.get(0);
+        allObjects.remove(0);
+        switch (obj.getTitle()) {
+            case "Car":
+                objectImage = findViewById(R.id.carImage);
+                break;
+            case "Person":
+                objectImage = findViewById(R.id.humanImage);
+                break;
+            case "No object found":
+                objectImage = findViewById(R.id.nothingImage);
+            case "Server not found":
+                objectImage = findViewById(R.id.serverNotFound);
+            default:
+                objectImage = findViewById(R.id.imageOfDetectedObject); //TODO - This will display the image sent from raspberryPi
+        }
+
+        objectTitle.setText(obj.getTitle());
+        dimensionText.setText(obj.getDimensions());
+        distanceText.setText(obj.getDistance());
+
+        fadeInAndShowImage(objectImage);
+
+        if(allObjects.isEmpty()){
+            next.setVisibility(View.INVISIBLE);
+            next.setClickable(false);
+        }
+
     }
 
     private void fadeInAndShowImage(final ImageView img) {
@@ -195,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
 
         final EditText input = new EditText(MainActivity.this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint("Format: 192.168.0.1");
+        input.setHint("Current IP: " + ipAddress);
         builder.setView(input);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
