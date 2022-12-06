@@ -1,15 +1,15 @@
 package com.example.dimension.Model;
 
 /**
- * Used to create one detected object when several objects are detected *
+ * Used to create one detected object.
  * @author Robert Nilsson
  */
 public class OneObject {
 
-    private String title;
-    private String objectImage;
-    private String dimensions;
-    private String distance;
+    private final String title;
+    private final String objectImage;
+    private final String dimensions;
+    private final String distance;
 
     public OneObject(String title, String dimensions, String distance, String image){
         this.title = title;

@@ -8,14 +8,9 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
@@ -25,7 +20,6 @@ import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -37,15 +31,12 @@ import com.example.dimension.Model.ConnectionState;
 import com.example.dimension.Model.OneObject;
 import com.example.dimension.ViewModel.ObjectViewModel;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.xml.datatype.*;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     TextView detailsText;
     Timer timer1;
     boolean connected = false;
-    String ipAddress = "192.168.191.149"; //TODO - remove or set to the static IP of our raspberryPi
+    String ipAddress = "192.168.68.123"; //This is default address of raspberryPi. Possible to change in app
     ObjectViewModel objectViewModel;
     ArrayList<OneObject> allObjects = new ArrayList<>();
 
@@ -120,24 +111,21 @@ public class MainActivity extends AppCompatActivity {
 
         //Get JSON String data and convert it to an image
         Bitmap detectedObject = BitmapDecode.stringToBitmap(obj.getObjectImage());
-        ImageView temp = (ImageView) findViewById(R.id.imageOfDetectedObject);
-        temp.setImageBitmap(detectedObject);
+        ImageView detected = (ImageView) findViewById(R.id.imageOfDetectedObject);
+        detected.setImageBitmap(detectedObject);
 
-
+        //sets image of detected object
         switch (obj.getTitle()) {
-            /*case "Car":
-                objectImage = findViewById(R.id.carImage);
-                break;
-            case "Person":
-                objectImage = findViewById(R.id.humanImage);
-                break;*/
+
             case "No object found":
                 objectImage = findViewById(R.id.nothingImage);
+                break;
             case "Server not found":
                 objectImage = findViewById(R.id.serverNotFound);
+                break;
             default:
-                objectImage = temp;
-                //objectImage = findViewById(R.id.imageOfDetectedObject); //TODO - This will display image sent from raspberryPi
+                objectImage = detected;
+                break;
         }
         
         objectTitle = dialog.findViewById(R.id.objectTitle);
@@ -181,29 +169,35 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 fadeOutAndHideImage(objectImage);
-                showNextObject(dialog, buttonNext);
+                showNextObject(buttonNext);
                 }
 
         });
     }
 
-    //Displays the next detected object in the list received from raspberry pie
-    private void showNextObject(Dialog dialog, Button next){
+    //Displays the next detected object in the list received from raspberryPie
+    private void showNextObject(Button next){
+
         OneObject obj = allObjects.get(0);
         allObjects.remove(0);
+
+        //Get JSON String data and convert it to an image
+        Bitmap detectedObject = BitmapDecode.stringToBitmap(obj.getObjectImage());
+        ImageView detected = (ImageView) findViewById(R.id.imageOfDetectedObject);
+        detected.setImageBitmap(detectedObject);
+
+        //sets image of detected object
         switch (obj.getTitle()) {
-            case "Car":
-                objectImage = findViewById(R.id.carImage);
-                break;
-            case "Person":
-                objectImage = findViewById(R.id.humanImage);
-                break;
+
             case "No object found":
                 objectImage = findViewById(R.id.nothingImage);
+                break;
             case "Server not found":
                 objectImage = findViewById(R.id.serverNotFound);
+                break;
             default:
-                objectImage = findViewById(R.id.imageOfDetectedObject); //TODO - This will display the image sent from raspberryPi
+                objectImage = detected;
+                break;
         }
 
         objectTitle.setText(obj.getTitle());
@@ -331,5 +325,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }, delay);
     }
-
 }

@@ -6,6 +6,11 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 
+/**
+ * Used to show if app is connected to raspberryPi.
+ * @author Robert Nilsson
+ */
+
 public class ConnectionState {
 
     private String piAddress = "";

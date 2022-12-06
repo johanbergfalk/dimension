@@ -1,7 +1,7 @@
 package com.example.dimension.Model;
 
 /**
- * Class used when to "store/create" JSON object
+ * Class used when to "store/create" JSON object.
  * @author Robert Nilsson
  *
  */

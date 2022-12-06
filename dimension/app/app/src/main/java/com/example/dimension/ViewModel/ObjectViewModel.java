@@ -9,6 +9,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Handles requests to raspberryPi and stores all detected
+ * objects in an Array.
+ * @author Robert Nilsson
+ */
 public class ObjectViewModel extends ViewModel{
 
     String objectTitle;
@@ -24,7 +29,7 @@ public class ObjectViewModel extends ViewModel{
 
         request = new GetRequest(ipAddress);
 
-        //Run the networkservice in separate thread
+        //Run the network-service in separate thread
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<?> future = executor.submit(new Runnable() {
             @Override
@@ -38,40 +43,15 @@ public class ObjectViewModel extends ViewModel{
         });
         future.get();
 
+        //Add all detected objects into the Array
         for(ObjectBuilder b : builder) {
             objectTitle = b.getObjectType();
             dimensionText = b.getHeight() + " X " + b.getWidth() + " cm";
             distanceText = b.getDistance() + " cm";
             objectImage = b.getObjectImage();
-            objects.add(new OneObject(objectTitle, dimensionText, distanceText, objectImage)); //TODO ändra till att skicka med faktiskt imagestring
+            objects.add(new OneObject(objectTitle, dimensionText, distanceText, objectImage));
         }
     }
-
-    public String getObjectTitle() {
-        return objectTitle;
-    }
-
-    public void setObjectTitle(String objectTitle) {
-        this.objectTitle = objectTitle;
-    }
-
-    public String getDimensionText() {
-        return dimensionText;
-    }
-
-    public void setDimensionText(String dimensionText) {
-        this.dimensionText = dimensionText;
-    }
-
-    public String getDistanceText() {
-        return distanceText;
-    }
-
-    public void setDistanceText(String distanceText) {
-        this.distanceText = distanceText;
-    }
-
-    public String getIpAddress(){return ipAddress;}
 
     public void setIpAddress(String ipAddress){
         this.ipAddress = ipAddress;
@@ -80,5 +60,4 @@ public class ObjectViewModel extends ViewModel{
     public ArrayList<OneObject> getObjects(){
         return this.objects;
     }
-
 }

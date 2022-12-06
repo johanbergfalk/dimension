@@ -1,7 +1,6 @@
 package com.example.dimension.Model;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
@@ -52,19 +51,21 @@ public class GetRequest {
             connection = (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(2000); //TODO - Find "good" values here
-            connection.setReadTimeout(2000); //TODO - Find "good" values here
+            connection.setConnectTimeout(2000);
+            connection.setReadTimeout(2000);
 
 
 
             status = connection.getResponseCode(); //We want the code 200 for successful connection
 
+            //Collect errors
             if(status > 299){
                 reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
                 while((line = reader.readLine()) != null){
                     responseContent.append(line);
                 }
                 reader.close();
+            //Get whole JSON and store in stream
             } else {
                 reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 while((line = reader.readLine()) != null){
@@ -73,11 +74,17 @@ public class GetRequest {
                 reader.close();
             }
 
+        //Catch errors but continue to run and show appropriate message in app
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        } catch (ConnectException e){
+            connected = false;
+            receivedObjects = allObjects("IP");
+        } catch (NullPointerException e){
             connected = false;
             receivedObjects = allObjects("[]");
+        } catch (ConnectException e) {
+            connected = false;
+            receivedObjects = allObjects("IP");
         } catch (SocketTimeoutException e){
             connected = false;
             receivedObjects = allObjects("IP");
@@ -92,10 +99,11 @@ public class GetRequest {
 
     //Extract the stream and make new object with the data
     public ObjectBuilder[] allObjects(String response){
-        //If no objects are found, create an No object found "object
+        //If no objects are found, create an No object found "object"
         if(response.equals("[]")){
             response = "[{'objectType': 'No object found', 'height': 0, 'width': 0, 'distance': 0}]";
         }
+        //If disconnected from server create on Server not found "object"
         if(response.equals("IP")){
             response = "[{'objectType': 'Server not found', 'height': 0, 'width': 0, 'distance': 0}]";
         }

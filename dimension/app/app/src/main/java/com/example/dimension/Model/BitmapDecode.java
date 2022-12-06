@@ -4,6 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 
+
+/**
+ * Used to decode String into bitmap
+ * @author Sebastian Sela
+ */
 public class BitmapDecode {
 
     public static Bitmap stringToBitmap(String string) {
