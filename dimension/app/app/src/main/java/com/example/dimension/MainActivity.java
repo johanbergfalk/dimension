@@ -8,8 +8,12 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.text.InputType;
@@ -28,11 +32,15 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.dimension.Model.BitmapDecode;
 import com.example.dimension.Model.ConnectionState;
 import com.example.dimension.Model.OneObject;
 import com.example.dimension.ViewModel.ObjectViewModel;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -50,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     TextView detailsText;
     Timer timer1;
     boolean connected = false;
-    String ipAddress = "192.168.68.123"; //TODO - remove or set to the static IP of our raspberryPi
+    String ipAddress = "192.168.191.149"; //TODO - remove or set to the static IP of our raspberryPi
     ObjectViewModel objectViewModel;
     ArrayList<OneObject> allObjects = new ArrayList<>();
 
@@ -110,19 +118,26 @@ public class MainActivity extends AppCompatActivity {
         OneObject obj = allObjects.get(0);
         allObjects.remove(0);
 
+        //Get JSON String data and convert it to an image
+        Bitmap detectedObject = BitmapDecode.stringToBitmap(obj.getObjectImage());
+        ImageView temp = (ImageView) findViewById(R.id.imageOfDetectedObject);
+        temp.setImageBitmap(detectedObject);
+
+
         switch (obj.getTitle()) {
-            case "Car":
+            /*case "Car":
                 objectImage = findViewById(R.id.carImage);
                 break;
             case "Person":
                 objectImage = findViewById(R.id.humanImage);
-                break;
+                break;*/
             case "No object found":
                 objectImage = findViewById(R.id.nothingImage);
             case "Server not found":
                 objectImage = findViewById(R.id.serverNotFound);
             default:
-                objectImage = findViewById(R.id.imageOfDetectedObject); //TODO - This will display image sent from raspberryPi
+                objectImage = temp;
+                //objectImage = findViewById(R.id.imageOfDetectedObject); //TODO - This will display image sent from raspberryPi
         }
         
         objectTitle = dialog.findViewById(R.id.objectTitle);
@@ -316,4 +331,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }, delay);
     }
+
 }

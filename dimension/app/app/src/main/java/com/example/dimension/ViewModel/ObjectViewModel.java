@@ -14,6 +14,7 @@ public class ObjectViewModel extends ViewModel{
     String objectTitle;
     String dimensionText;
     String distanceText;
+    String objectImage;
     GetRequest request;
     ObjectBuilder[] builder; //All received detected objects
     String ipAddress = "";
@@ -41,7 +42,8 @@ public class ObjectViewModel extends ViewModel{
             objectTitle = b.getObjectType();
             dimensionText = b.getHeight() + " X " + b.getWidth() + " cm";
             distanceText = b.getDistance() + " cm";
-            objects.add(new OneObject(objectTitle, dimensionText, distanceText));
+            objectImage = b.getObjectImage();
+            objects.add(new OneObject(objectTitle, dimensionText, distanceText, objectImage)); //TODO ändra till att skicka med faktiskt imagestring
         }
     }
 

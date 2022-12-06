@@ -9,6 +9,7 @@ package com.example.dimension.Model;
 public class ObjectBuilder {
 
     private String objectType;
+    private String objectImage;
     private int height;
     private int width;
     private int distance;
@@ -46,6 +47,8 @@ public class ObjectBuilder {
     public void setDistance(int distance){
         this.distance = distance;
     }
+
+    public String getObjectImage() { return this.objectImage; }
 
 }
 
