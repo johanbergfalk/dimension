@@ -44,10 +44,27 @@ import math
 import calculatemetrics
 from datetime import datetime
 from detected_object import DetectedObject
-#import lidar
+from PIL import Image as PIL_IMG
+from io import BytesIO
+
+import base64
+import time
 import board
 import busio
+import adafruit_lidarlite
 
+# Create library object using our Bus I2C port
+i2c = busio.I2C(board.SCL, board.SDA)
+
+# Default configuration, with only i2c wires
+sensor = adafruit_lidarlite.LIDARLite(i2c)
+
+#Clear the initial inaccurate measurements from the sensor
+try:
+    for i in range(10):
+        sensor.distance
+except:
+    pass
 
 
 #Tell RPi to use pin numbers and not BCM when setting up gpio
@@ -97,13 +114,10 @@ bestObjectPosition = [0, 0, 0, 0] #(xmin, ymin, xmax, ymax)
 bestObjectImg = None
 bestObjectDistance = None
 bestObjectClass = None
+bestObjectLidar = None
 frameCount = 0
 
-# Create library object using our Bus I2C port
-i2c = busio.I2C(board.SCL, board.SDA)
 
-# Default configuration, with only i2c wires
-sensor = adafruit_lidarlite.LIDARLite(i2c)
 
 #Is the detected object the one pointed at by the LiDAR?
 # min = top-left corner, max = bottom-right corner
@@ -114,18 +128,22 @@ def objectIsCenter(xmin, ymin, xmax, ymax):
         return False
 
 def buttonPressed(pin):
-    global searchActivated
-    global frameCount, bestObjectClass, bestObjectImg, bestObjectDistance, bestObjectPosition
+    global searchActivated, sensor
+    global frameCount, bestObjectClass, bestObjectImg, bestObjectDistance, bestObjectPosition, bestObjectLidar
     print("Button pressed")
     if searchActivated:
         return
     else:
+        
+        print(sensor.distance)
         searchActivated = True
         bestObjectPosition = None
         bestObjectDistance = None
+        bestObjectLidar = None
         bestObjectImg = None
         bestObjectClass = None
         frameCount = 3 #How many frames to sample
+        
 
 def distanceFromCenter(xmin, ymin, xmax, ymax):
     xObjCenter = xmin + (int(round((xmax - xmin) / 2)))
@@ -139,8 +157,7 @@ GPIO.add_event_detect(buttonPin, GPIO.RISING, callback = buttonPressed, bounceti
 
 
 
-frame_rate_calc = 1
-freq = cv2.getTickFrequency()
+
 
 # Get model details
 input_details = interpreter.get_input_details()
@@ -155,7 +172,7 @@ cv2.namedWindow('Object detector', cv2.WINDOW_NORMAL)
 
 while True:
 
-    t1 = cv2.getTickCount()
+   
 
     frame = videostream.read()
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -193,43 +210,59 @@ while True:
                         bestObjectPosition = [xmin, ymin, xmax, ymax]
                         bestObjectImg = frame.copy()
                         bestObjectClass = labels[int(classes[i])]
+                        successfulMeasures = 10
+                        avgMeasure = 0
+                        for i in range(10):
+                            try:
+                                avgMeasure += sensor.distance
+                            except:
+                                successfulMeasures -= 1
+                        bestObjectLidar = (avgMeasure / successfulMeasures) - 12
                         
                     if distanceFromCenter(xmin, ymin, xmax, ymax) < bestObjectDistance:
                         bestObjectDistance = distanceFromCenter(xmin, ymin, xmax, ymax)
                         bestObjectPosition = [xmin, ymin, xmax, ymax]
                         bestObjectImg = frame.copy()
                         bestObjectClass = labels[int(classes[i])]
-                        
+                        successfulMeasures = 10
+                        avgMeasure = 0
+                        for i in range(10):
+                            try:
+                                avgMeasure += sensor.distance
+                            except:
+                                successfulMeasures -= 1
+                        bestObjectLidar = (avgMeasure / successfulMeasures) - 12
                  
         if frameCount == 0:
             searchActivated = False
             if bestObjectDistance != None:
                 detectedImage = bestObjectImg[bestObjectPosition[1]:bestObjectPosition[3], bestObjectPosition[0]:bestObjectPosition[2]]
-                print("Best match: " + bestObjectClass)
-                timestamp = str(datetime.now())
-                print(str(sensor.distance,))
-                matchwidth = calculatemetrics.px_to_metric(1280, 160, bestObjectPosition[2] - bestObjectPosition[0], 100)
-                matchheight = calculatemetrics.px_to_metric(720, 90, bestObjectPosition[3] - bestObjectPosition[1], 100)
                 
-                #match = DetectedObject(bestObjectClass, int(matchheight), int(matchwidth), 100)
-                #match.object_list()
+                
+                
+                matchwidth = calculatemetrics.px_to_metric(1280, 160, bestObjectPosition[2] - bestObjectPosition[0], bestObjectLidar)
+                matchheight = calculatemetrics.px_to_metric(720, 90, bestObjectPosition[3] - bestObjectPosition[1], bestObjectLidar)
+                
+                detectedImage = cv2.cvtColor(detectedImage, cv2.COLOR_BGR2RGB)
+                buff = BytesIO()
+                data = PIL_IMG.fromarray(detectedImage)
+                data.save(buff, format="JPEG")
+                img64 = base64.b64encode(buff.getvalue()).decode("utf-8")
+                
+                
+                
+                
+                match = DetectedObject(bestObjectClass, int(matchheight), int(matchwidth), bestObjectLidar, img64)
+                match.object_list()
             else:
                 print("No match found")
                 
                 
-    # Draw framerate in corner of frame
-    cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
     
-    # Draw circle in center of screen
-    cv2.circle(frame, ((int(imW/2),int(imH/2))), 10, (0,0,255), thickness=2)
-
     # All the results have been drawn on the frame, so it's time to display it.
     cv2.imshow('Object detector', frame)
 
-    # Calculate framerate
-    t2 = cv2.getTickCount()
-    time1 = (t2-t1)/freq
-    frame_rate_calc= 1/time1
+    
 
    
     
