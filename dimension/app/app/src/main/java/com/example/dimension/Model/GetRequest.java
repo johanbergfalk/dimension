@@ -54,8 +54,6 @@ public class GetRequest {
             connection.setConnectTimeout(2000);
             connection.setReadTimeout(2000);
 
-
-
             status = connection.getResponseCode(); //We want the code 200 for successful connection
 
             //Collect errors
@@ -78,16 +76,16 @@ public class GetRequest {
         } catch (MalformedURLException e) {
             e.printStackTrace();
             connected = false;
-            receivedObjects = allObjects("IP");
+            receivedObjects = allObjects("IP"); //Server not found
         } catch (NullPointerException e){
             connected = false;
-            receivedObjects = allObjects("[]");
+            receivedObjects = allObjects("[]"); //No object found
         } catch (ConnectException e) {
             connected = false;
-            receivedObjects = allObjects("IP");
+            receivedObjects = allObjects("IP"); //Server not found
         } catch (SocketTimeoutException e){
             connected = false;
-            receivedObjects = allObjects("IP");
+            receivedObjects = allObjects("IP"); //Server not found
         }finally {
         connection.disconnect();
         }
@@ -107,6 +105,7 @@ public class GetRequest {
         if(response.equals("IP")){
             response = "[{'objectType': 'Server not found', 'height': 0, 'width': 0, 'distance': 0}]";
         }
+
         final GsonBuilder gsonBuilder = new GsonBuilder();
         final Gson gson = gsonBuilder.create();
         return gson.fromJson(response, ObjectBuilder[].class);

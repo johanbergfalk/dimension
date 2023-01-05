@@ -6,7 +6,7 @@ import android.util.Base64;
 
 
 /**
- * Used to decode String into bitmap
+ * Used to decode JSON String data into bitmap
  * @author Sebastian Sela
  */
 public class BitmapDecode {

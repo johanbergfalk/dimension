@@ -37,11 +37,16 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
+/**
+ * Main class, handles all user interactions.
+ * @author Robert Nilsson
+ * @author Johan Bergfalk
+ * @author Erik Gustavsson
+ */
 public class MainActivity extends AppCompatActivity {
 
-    Button show;
-    ImageButton settings;
+    Button show; //Shows dialog with all (if any) detected objects and their measurements
+    ImageButton settings; //Button used for setting IP address of raspberryPi
     ImageView objectImage;
     TextView objectTitle;
     TextView dimensionText;
@@ -49,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     TextView detailsText;
     Timer timer1;
     boolean connected = false;
-    String ipAddress = "192.168.68.123"; //This is default address of raspberryPi. Possible to change in app
+    String ipAddress = "192.168.68.123"; //This is default address of raspberryPi. Change to actual IP of running raspberryPi in application
     ObjectViewModel objectViewModel;
     ArrayList<OneObject> allObjects = new ArrayList<>();
 
@@ -106,28 +111,28 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        OneObject obj = allObjects.get(0);
-        allObjects.remove(0);
+        OneObject obj = allObjects.get(0); //Get the first detected object in the list
+        allObjects.remove(0); //Remove the first detected object from the list
 
         //Get JSON String data and convert it to an image
         Bitmap detectedObject = BitmapDecode.stringToBitmap(obj.getObjectImage());
         ImageView detected = (ImageView) findViewById(R.id.imageOfDetectedObject);
         detected.setImageBitmap(detectedObject);
 
-        //sets image of detected object
+        //Sets image of detected object
         switch (obj.getTitle()) {
 
-            case "No object found":
+            case "No object found": //If there were no object detected
                 objectImage = findViewById(R.id.nothingImage);
                 break;
-            case "Server not found":
+            case "Server not found": //If there is no connection to the raspberryPi
                 objectImage = findViewById(R.id.serverNotFound);
                 break;
             default:
                 objectImage = detected;
                 break;
         }
-        
+
         objectTitle = dialog.findViewById(R.id.objectTitle);
         dimensionText = dialog.findViewById(R.id.dimensionText);
         distanceText = dialog.findViewById(R.id.distanceText);
@@ -158,8 +163,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //If only one object is detected, the "Next" button is not shown
+        //Click to show next detected object
         Button buttonNext = dialog.findViewById(R.id.buttonNext);
+
+        //If only one object is detected, the "Next" button is not shown
         if(allObjects.size() < 1){
             buttonNext.setVisibility(View.INVISIBLE);
             buttonNext.setClickable(false);
@@ -178,8 +185,8 @@ public class MainActivity extends AppCompatActivity {
     //Displays the next detected object in the list received from raspberryPie
     private void showNextObject(Button next){
 
-        OneObject obj = allObjects.get(0);
-        allObjects.remove(0);
+        OneObject obj = allObjects.get(0); //Get the first detected object in the list
+        allObjects.remove(0); //Remove the first detected object from the list
 
         //Get JSON String data and convert it to an image
         Bitmap detectedObject = BitmapDecode.stringToBitmap(obj.getObjectImage());
@@ -189,10 +196,10 @@ public class MainActivity extends AppCompatActivity {
         //sets image of detected object
         switch (obj.getTitle()) {
 
-            case "No object found":
+            case "No object found": //If there were no object detected
                 objectImage = findViewById(R.id.nothingImage);
                 break;
-            case "Server not found":
+            case "Server not found": //If there is no connection to the raspberryPi
                 objectImage = findViewById(R.id.serverNotFound);
                 break;
             default:
@@ -206,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
         fadeInAndShowImage(objectImage);
 
+        //If there are no more detected objects, hide the next button
         if(allObjects.isEmpty()){
             next.setVisibility(View.INVISIBLE);
             next.setClickable(false);
@@ -255,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
         img.startAnimation(fadeOut);
     }
 
+    //Set IP of raspberryPi where server is running
     private void setIp() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -265,6 +274,8 @@ public class MainActivity extends AppCompatActivity {
         input.setHint("Current IP: " + ipAddress);
         builder.setView(input);
 
+
+        //Confirm IP
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
             @Override
@@ -273,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Cancel setting IP
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 
             @Override
@@ -282,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
         });
         builder.show();
     }
-    //"ping" raspberryPi to check if it is reachable and can respond to REST connection
+    //Continuously poll raspberryPi to check if it is reachable and can respond to REST connection
     private void checkConnectedState() {
 
         //Running in loop to continuously test connection state with server
@@ -311,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
     //Shows the state as a red(connected) or green(not connected) led at the home screen depending on connected state to raspberryPi
     private void setConnectedState(){
         //Create the 2 views for red and green led
-        ImageView connectedToServer = findViewById(R.id.connectedView);;
+        ImageView connectedToServer = findViewById(R.id.connectedView);
         ImageView notConnectedToSer = findViewById(R.id.notConnectedView);
 
         Handler h = new Handler();

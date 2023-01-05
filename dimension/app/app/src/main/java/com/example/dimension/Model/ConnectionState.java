@@ -32,8 +32,8 @@ public class ConnectionState {
             connection = (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(2000); //TODO - Find "good" values here
-            connection.setReadTimeout(2000); //TODO - Find "good" values here
+            connection.setConnectTimeout(2000);
+            connection.setReadTimeout(2000);
 
             status = connection.getResponseCode(); //We want the code 200 for successful connection
 
